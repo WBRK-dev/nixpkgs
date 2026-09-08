@@ -16,4 +16,6 @@
         environment.systemPackages = [ pkgs.hello-wbrk ];
       };
     };
+
+  warden = import ./warden.nix;
 }

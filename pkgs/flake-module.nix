@@ -7,6 +7,11 @@
         let
           wbrkPkgs = import ./default.nix { inherit pkgs; };
         in
-        wbrkPkgs // { default = wbrkPkgs.hello-wbrk; };
+        {
+          inherit (wbrkPkgs) hello-wbrk;
+          inherit (wbrkPkgs.wbrk) warden;
+          wbrk-warden = wbrkPkgs.wbrk.warden;
+          default = wbrkPkgs.hello-wbrk;
+        };
     };
 }

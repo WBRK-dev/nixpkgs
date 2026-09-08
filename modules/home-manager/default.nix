@@ -13,4 +13,6 @@
         programs.bash.enable = true;
       };
     };
+
+  warden = import ./warden.nix;
 }
