@@ -1,0 +1,19 @@
+{
+  default =
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
+    {
+      options.wbrk.enable = lib.mkEnableOption "WBRK base darwin config";
+      config = lib.mkIf config.wbrk.enable {
+        nix.settings.experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
+        environment.systemPackages = [ pkgs.hello-wbrk ];
+      };
+    };
+}
