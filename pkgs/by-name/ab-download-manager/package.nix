@@ -145,6 +145,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
+      "aarch64-darwin"
     ];
     mainProgram = "ABDownloadManager";
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
