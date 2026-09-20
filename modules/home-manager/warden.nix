@@ -2,6 +2,7 @@
 
 let
   cfg = config.programs.warden;
+  wardenPackage = cfg.package.override { dnsmasqPort = cfg.dnsmasqPort; };
 in
 {
   options.programs.warden = {
@@ -12,13 +13,12 @@ in
     dnsmasqPort = lib.mkOption {
       type = lib.types.port;
       default = 53;
-      description = "Host port bound to warden dnsmasq. Exported as WARDEN_DNSMASQ_PORT session variable; no rebuild needed.";
+      description = "Host port bound to warden dnsmasq. Baked into the wrapped warden package at build time; a switch rebuilds the (cheap, non-compiling) wrapper -- no shell env var is involved.";
     };
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ cfg.package ];
-    home.sessionVariables.WARDEN_DNSMASQ_PORT = toString cfg.dnsmasqPort;
+    home.packages = [ wardenPackage ];
 
     programs.ssh.enable = lib.mkDefault true;
     programs.ssh.extraConfig = ''

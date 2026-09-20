@@ -2,6 +2,7 @@
 
 let
   cfg = config.services.warden;
+  wardenPackage = cfg.package.override { dnsmasqPort = cfg.dnsmasqPort; };
 in
 {
   options.services.warden = {
@@ -12,13 +13,12 @@ in
     dnsmasqPort = lib.mkOption {
       type = lib.types.port;
       default = 53;
-      description = "Host port bound to warden dnsmasq. Applied at runtime via WARDEN_DNSMASQ_PORT; no rebuild needed.";
+      description = "Host port bound to warden dnsmasq. Baked into the wrapped warden package at build time; a switch rebuilds the (cheap, non-compiling) wrapper -- no shell env var is involved.";
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-    environment.variables.WARDEN_DNSMASQ_PORT = toString cfg.dnsmasqPort;
+    environment.systemPackages = [ wardenPackage ];
 
     environment.etc."resolver/test".text = ''
       nameserver 127.0.0.1

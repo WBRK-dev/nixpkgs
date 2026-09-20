@@ -19,7 +19,7 @@ Overlay: `nixpkgs.overlays = [ inputs.wbrk.overlays.default ];` then use `pkgs.w
 # NixOS / darwin
 services.warden = {
   enable = true;
-  dnsmasqPort = 5353; # runtime via WARDEN_DNSMASQ_PORT, no rebuild
+  dnsmasqPort = 5353; # baked into the wrapped warden package at build time
 };
 # home-manager
 programs.warden = {

@@ -2,6 +2,7 @@
 
 let
   cfg = config.services.warden;
+  wardenPackage = cfg.package.override { dnsmasqPort = cfg.dnsmasqPort; };
 in
 {
   options.services.warden = {
@@ -12,7 +13,7 @@ in
     dnsmasqPort = lib.mkOption {
       type = lib.types.port;
       default = 53;
-      description = "Host port bound to warden dnsmasq (127.0.0.1:<port> -> 53/udp). Applied at runtime via WARDEN_DNSMASQ_PORT; no rebuild needed.";
+      description = "Host port bound to warden dnsmasq (127.0.0.1:<port> -> 53/udp). Baked into the wrapped warden package at build time; a switch rebuilds the (cheap, non-compiling) wrapper -- no shell env var is involved.";
     };
   };
 
@@ -24,8 +25,7 @@ in
       }
     ];
 
-    environment.systemPackages = [ cfg.package ];
-    environment.variables.WARDEN_DNSMASQ_PORT = toString cfg.dnsmasqPort;
+    environment.systemPackages = [ wardenPackage ];
 
     programs.ssh.extraConfig = ''
       ## WARDEN START ##

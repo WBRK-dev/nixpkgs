@@ -8,6 +8,7 @@
 , git
 , openssl
 , coreutils
+, dnsmasqPort ? 53
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -35,8 +36,8 @@ stdenvNoCC.mkDerivation rec {
 
     sed -i 's|export readonly WARDEN_BIN="''${WARDEN_DIR}/bin/warden"|export readonly WARDEN_BIN="@out@/bin/warden"|' bin/warden
 
-    # Runtime port: single build, WARDEN_DNSMASQ_PORT selects host port at `warden svc up` time.
-    sed -i 's|127.0.0.1:53|127.0.0.1:''${WARDEN_DNSMASQ_PORT:-53}|' docker/docker-compose.dnsmasq.yml
+    # Host port baked in at build time; override via `warden.override { dnsmasqPort = ...; }`.
+    sed -i 's|127.0.0.1:53|127.0.0.1:${toString dnsmasqPort}|' docker/docker-compose.dnsmasq.yml
     sed -i '/-vite\./d' environments/laravel/laravel.base.yml
   '';
 
