@@ -9,8 +9,16 @@
 , openssl
 , coreutils
 , dnsmasqPort ? 53
+, dnsmasqExtraConfig ? ""
 }:
 
+let
+  # Upstream hook inside the WARDEN_DNSMASQ_CONF block scalar (8-space indent).
+  dnsmasqConfPlaceholder = "\${WARDEN_DNSMASQ_CONF_ADDITIONAL:-}";
+  # `$` -> `$$` so docker compose does not interpolate it.
+  dnsmasqExtraLines = lib.splitString "\n"
+    (lib.removeSuffix "\n" (lib.replaceStrings [ "$" ] [ "$$" ] dnsmasqExtraConfig));
+in
 stdenvNoCC.mkDerivation rec {
   pname = "warden";
   version = "0.16.0-p3";
@@ -24,6 +32,9 @@ stdenvNoCC.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
+  # Passed via env so multi-line text survives shell quoting in postPatch.
+  dnsmasqExtraConf = lib.concatStringsSep "\n        " (dnsmasqExtraLines ++ [ dnsmasqConfPlaceholder ]);
 
   dontBuild = true;
   dontConfigure = true;
@@ -39,6 +50,11 @@ stdenvNoCC.mkDerivation rec {
     # Host port baked in at build time; override via `warden.override { dnsmasqPort = ...; }`.
     sed -i 's|127.0.0.1:53|127.0.0.1:${toString dnsmasqPort}|' docker/docker-compose.dnsmasq.yml
     sed -i '/-vite\./d' environments/laravel/laravel.base.yml
+  '' + lib.optionalString (dnsmasqExtraConfig != "") ''
+
+    # Extra dnsmasq.conf lines; override via `warden.override { dnsmasqExtraConfig = ...; }`.
+    substituteInPlace docker/docker-compose.dnsmasq.yml \
+      --replace-fail '${dnsmasqConfPlaceholder}' "$dnsmasqExtraConf"
   '';
 
   installPhase = ''

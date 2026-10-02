@@ -20,6 +20,11 @@ Overlay: `nixpkgs.overlays = [ inputs.wbrk.overlays.default ];` then use `pkgs.w
 services.warden = {
   enable = true;
   dnsmasqPort = 5353; # baked into the wrapped warden package at build time
+  # appended to warden's dnsmasq config (docker-compose.dnsmasq.yml); `warden svc up` to apply
+  dnsmasqExtraConfig = ''
+    log-queries
+    address=/.local/127.0.0.1
+  '';
 };
 # home-manager
 programs.warden = {

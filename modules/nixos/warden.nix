@@ -2,7 +2,7 @@
 
 let
   cfg = config.services.warden;
-  wardenPackage = cfg.package.override { dnsmasqPort = cfg.dnsmasqPort; };
+  wardenPackage = cfg.package.override { inherit (cfg) dnsmasqPort dnsmasqExtraConfig; };
 in
 {
   options.services.warden = {
@@ -14,6 +14,13 @@ in
       type = lib.types.port;
       default = 53;
       description = "Host port bound to warden dnsmasq (127.0.0.1:<port> -> 53/udp). Baked into the wrapped warden package at build time; a switch rebuilds the (cheap, non-compiling) wrapper -- no shell env var is involved.";
+    };
+
+    dnsmasqExtraConfig = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      example = "log-queries\naddress=/.local/127.0.0.1";
+      description = "Extra dnsmasq.conf lines appended to warden's dnsmasq config in docker-compose.dnsmasq.yml. Baked into the wrapped warden package at build time; run `warden svc up` afterwards to apply.";
     };
   };
 
