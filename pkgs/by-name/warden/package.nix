@@ -13,8 +13,9 @@
 }:
 
 let
-  # Upstream hook inside the WARDEN_DNSMASQ_CONF block scalar (8-space indent).
-  dnsmasqConfPlaceholder = "\${WARDEN_DNSMASQ_CONF_ADDITIONAL:-}";
+  # Warden's .test rule inside the WARDEN_DNSMASQ_CONF block scalar (8-space indent);
+  # extra rules (e.g. address=/.minikube.test/<ip>) are inserted right before it.
+  dnsmasqTestRule = "address=/.test/127.0.0.1";
   # `$` -> `$$` so docker compose does not interpolate it.
   dnsmasqExtraLines = lib.splitString "\n"
     (lib.removeSuffix "\n" (lib.replaceStrings [ "$" ] [ "$$" ] dnsmasqExtraConfig));
@@ -34,7 +35,7 @@ stdenvNoCC.mkDerivation rec {
   nativeBuildInputs = [ makeWrapper ];
 
   # Passed via env so multi-line text survives shell quoting in postPatch.
-  dnsmasqExtraConf = lib.concatStringsSep "\n        " (dnsmasqExtraLines ++ [ dnsmasqConfPlaceholder ]);
+  dnsmasqExtraConf = lib.concatStringsSep "\n        " (dnsmasqExtraLines ++ [ dnsmasqTestRule ]);
 
   dontBuild = true;
   dontConfigure = true;
@@ -52,9 +53,9 @@ stdenvNoCC.mkDerivation rec {
     sed -i '/-vite\./d' environments/laravel/laravel.base.yml
   '' + lib.optionalString (dnsmasqExtraConfig != "") ''
 
-    # Extra dnsmasq.conf lines; override via `warden.override { dnsmasqExtraConfig = ...; }`.
+    # Extra dnsmasq.conf lines before the .test rule; override via `warden.override { dnsmasqExtraConfig = ...; }`.
     substituteInPlace docker/docker-compose.dnsmasq.yml \
-      --replace-fail '${dnsmasqConfPlaceholder}' "$dnsmasqExtraConf"
+      --replace-fail '${dnsmasqTestRule}' "$dnsmasqExtraConf"
   '';
 
   installPhase = ''

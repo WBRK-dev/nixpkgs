@@ -19,8 +19,8 @@ in
     dnsmasqExtraConfig = lib.mkOption {
       type = lib.types.lines;
       default = "";
-      example = "log-queries\naddress=/.local/127.0.0.1";
-      description = "Extra dnsmasq.conf lines appended to warden's dnsmasq config in docker-compose.dnsmasq.yml. Baked into the wrapped warden package at build time; run `warden svc up` afterwards to apply.";
+      example = "address=/.minikube.test/192.168.49.2";
+      description = "Extra dnsmasq.conf lines (e.g. address=/.minikube.test/<ip>) inserted right before warden's address=/.test/127.0.0.1 rule in docker-compose.dnsmasq.yml. Baked into the wrapped warden package at build time; run `warden svc up` afterwards to apply.";
     };
   };
 
